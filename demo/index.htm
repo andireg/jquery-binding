@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>jquery mvvm</title>
+</head>
+
+<body>
+    <h1 data-binding="property:text;path:title;mode:get"></h1>
+    <input data-binding="property:value;path:title" />
+    <input data-binding="property:value;path:title;mode:get" />
+    <input data-binding="property:value;path:title;mode:set" />
+    <p data-binding="property:text;path:title"></p>
+    <button data-binding="property:command;path:addListItem">Click</button>
+    <ul data-binding="property:items;path:list">
+        <li>
+            <span>{{txt}}</span>
+            <span data-binding="property:text;path:val"></span>
+            <input data-binding="property:value;path:val" />
+            <button data-binding="property:command;path:^remove;parameter:{{id}}">remove</button>
+        </li>
+    </ul>
+    <input type="checkbox" data-binding="property:checked;path:boolTest" />
+    <span data-binding="property:text;path:boolTest;converter:boolToCheckConverter|property:style.color;path:boolTest;converter:boolToColorConverter"></span>
+    <input value="test" data-binding="property:enabled;path:boolNotTest" />
+    <input value="test" data-binding="property:visibility;path:boolTest" />
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="../dist/jquery.binding.js"></script>
+    <script type="text/javascript">
+        Binding.registerConverter("boolToCheckConverter", function(value) {
+            return value ? "Aktiv" : "Nicht aktiv";
+        });
+        Binding.registerConverter("boolToColorConverter", function(value) {
+            return value ? "green" : "red";
+        });
+
+        $(function() {
+            /*
+            var viewmodel = new Binding.NotifyPropertyChanged({
+                title: "Hello World",
+                boolTest: true,
+                boolNotTest: false,
+                list: new Binding.ObservableCollection(
+                    [
+                        new Binding.NotifyPropertyChanged({
+                            id: Math.random(),
+                            txt: "First",
+                            val: 1
+                        }),
+                        new Binding.NotifyPropertyChanged({
+                            id: Math.random(),
+                            txt: "Second",
+                            val: 2
+                        }),
+                        new Binding.NotifyPropertyChanged({
+                            id: Math.random(),
+                            txt: "Third",
+                            val: 3
+                        })
+                    ]
+                ),
+                addListItem: function() {
+                    this.list.add(new Binding.NotifyPropertyChanged({
+                        id: Math.random(),
+                        txt: "New",
+                        val: 0
+                    }));
+                },
+                remove: function(id) {
+                    var item = this;
+                    var parsedId = parseFloat(id);
+                    var idx = -1;
+                    $.each(viewmodel.list.all(), function(i, e) {
+                        if (e.id == parsedId) idx = i;
+                    });
+                    viewmodel.list.remove(idx);
+                }
+            });
+            */
+
+            var viewmodel = Binding.bindableObject({
+                title: "Hello World",
+                boolTest: true,
+                boolNotTest: false,
+                list: [{
+                    id: Math.random(),
+                    txt: "First",
+                    val: 1
+                }, {
+                    id: Math.random(),
+                    txt: "Second",
+                    val: 2
+                }, {
+                    id: Math.random(),
+                    txt: "Third",
+                    val: 3
+                }]
+            });
+
+            viewmodel.addCommand("addListItem", function() {
+                this.list.add(new Binding.NotifyPropertyChanged({
+                    id: Math.random(),
+                    txt: "New",
+                    val: 0
+                }));
+            });
+
+            viewmodel.addCommand("remove", function(id) {
+                var item = this;
+                var parsedId = parseFloat(id);
+                var idx = -1;
+                $.each(viewmodel.list.all(), function(i, e) {
+                    if (e.id == parsedId) idx = i;
+                });
+                viewmodel.list.remove(idx);
+            });
+
+            viewmodel.PropertyChanged.on(function(args) {
+                switch (args.property) {
+                    case "boolTest":
+                        viewmodel.boolNotTest = !args.value;
+                        break;
+                }
+            });
+
+            $("body").binding(viewmodel);
+        });
+    </script>
+</body>
+
+</html>

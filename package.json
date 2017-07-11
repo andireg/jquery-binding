@@ -1,0 +1,26 @@
+{
+    "name": "jquery-binding",
+    "version": "1.0.0",
+    "author": "Andreas Regner",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/andireg/jquery-binding.git"
+    },
+    "dependencies": {
+        "jquery": "3.2.1"
+    },
+    "devDependencies": {
+        "requirejs": "2.3.3",
+        "typescript": "2.4.1",
+        "gulp": "3.9.1",
+        "gulp-util": "3.0.8",
+        "gulp-uglify": "3.0.0",
+        "gulp-typescript": "3.2.0"
+    },
+    "description": "A simple data-binding API for jquery",
+    "bugs": {
+        "url": "https://github.com/andireg/jquery-binding/issues"
+    },
+    "homepage": "https://github.com/andireg/jquery-binding#readme"
+}
