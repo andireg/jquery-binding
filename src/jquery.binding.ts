@@ -335,8 +335,8 @@ namespace Binding {
         private template: string;
 
         constructor(context: any, path: string, jquery: JQuery, property: string, converter: string = null) {
-            super(context, path, jquery, property), converter;
-
+            super(context, path, jquery, property, converter);
+            this.Jquery.data("binding-ctx", context).attr("data-binding-context", "context");
             this.template = jquery.data("binding-template");
             if(!this.template) {
                 var templateItem: JQuery = jquery.children().first();
@@ -394,11 +394,11 @@ namespace Binding {
         constructor(context: any, jquery: JQuery) {
             this.context = context;
             this.jquery = jquery;
+            this.jquery.data("binding-ctx", context).attr("data-binding-context", "context");
             this.parseElements();
         }
 
         private parseElements(): void {
-            this.jquery.data("binding-ctx", this.context).attr("data-binding-context", "context");
             this.jquery.find("*[data-binding]").each((n:number, e:Element):void => {
                 var jq: JQuery = $(e);
                 var optionString: string = jq.data("binding");

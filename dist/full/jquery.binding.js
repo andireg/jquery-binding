@@ -333,8 +333,8 @@ var Binding;
         __extends(ListBinding, _super);
         function ListBinding(context, path, jquery, property, converter) {
             if (converter === void 0) { converter = null; }
-            var _this = this;
-            _this = _super.call(this, context, path, jquery, property) || this, converter;
+            var _this = _super.call(this, context, path, jquery, property, converter) || this;
+            _this.Jquery.data("binding-ctx", context).attr("data-binding-context", "context");
             _this.template = jquery.data("binding-template");
             if (!_this.template) {
                 var templateItem = jquery.children().first();
@@ -391,11 +391,11 @@ var Binding;
         function ContextBinding(context, jquery) {
             this.context = context;
             this.jquery = jquery;
+            this.jquery.data("binding-ctx", context).attr("data-binding-context", "context");
             this.parseElements();
         }
         ContextBinding.prototype.parseElements = function () {
             var _this = this;
-            this.jquery.data("binding-ctx", this.context).attr("data-binding-context", "context");
             this.jquery.find("*[data-binding]").each(function (n, e) {
                 var jq = $(e);
                 var optionString = jq.data("binding");

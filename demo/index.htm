@@ -29,7 +29,7 @@
     <input value="test" data-binding="property:visibility;path:boolTest" />
 
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script type="text/javascript" src="../dist/jquery.binding.js"></script>
+    <script type="text/javascript" src="../dist/full/jquery.binding.js"></script>
     <script type="text/javascript">
         Binding.registerConverter("boolToCheckConverter", function(value) {
             return value ? "Aktiv" : "Nicht aktiv";
@@ -39,48 +39,6 @@
         });
 
         $(function() {
-            /*
-            var viewmodel = new Binding.NotifyPropertyChanged({
-                title: "Hello World",
-                boolTest: true,
-                boolNotTest: false,
-                list: new Binding.ObservableCollection(
-                    [
-                        new Binding.NotifyPropertyChanged({
-                            id: Math.random(),
-                            txt: "First",
-                            val: 1
-                        }),
-                        new Binding.NotifyPropertyChanged({
-                            id: Math.random(),
-                            txt: "Second",
-                            val: 2
-                        }),
-                        new Binding.NotifyPropertyChanged({
-                            id: Math.random(),
-                            txt: "Third",
-                            val: 3
-                        })
-                    ]
-                ),
-                addListItem: function() {
-                    this.list.add(new Binding.NotifyPropertyChanged({
-                        id: Math.random(),
-                        txt: "New",
-                        val: 0
-                    }));
-                },
-                remove: function(id) {
-                    var item = this;
-                    var parsedId = parseFloat(id);
-                    var idx = -1;
-                    $.each(viewmodel.list.all(), function(i, e) {
-                        if (e.id == parsedId) idx = i;
-                    });
-                    viewmodel.list.remove(idx);
-                }
-            });
-            */
 
             var viewmodel = Binding.bindableObject({
                 title: "Hello World",
