@@ -39,46 +39,41 @@
         });
 
         $(function() {
-
-            var viewmodel = new Binding.NotifyPropertyChanged({
+            var viewmodel = Binding.bindableObject({
                 title: "Hello World",
                 boolTest: true,
                 boolNotTest: false,
-                list: new Binding.ObservableCollection(
-                    [
-                        new Binding.NotifyPropertyChanged({
-                            id: Math.random(),
-                            txt: "First",
-                            val: 1
-                        }),
-                        new Binding.NotifyPropertyChanged({
-                            id: Math.random(),
-                            txt: "Second",
-                            val: 2
-                        }),
-                        new Binding.NotifyPropertyChanged({
-                            id: Math.random(),
-                            txt: "Third",
-                            val: 3
-                        })
-                    ]
-                ),
-                addListItem: function() {
-                    this.list.add(new Binding.NotifyPropertyChanged({
-                        id: Math.random(),
-                        txt: "New",
-                        val: 0
-                    }));
-                },
-                remove: function(id) {
-                    var item = this;
-                    var parsedId = parseFloat(id);
-                    var idx = -1;
-                    $.each(viewmodel.list.all(), function(i, e) {
-                        if (e.id == parsedId) idx = i;
-                    });
-                    viewmodel.list.remove(idx);
-                }
+                list: [{
+                    id: Math.random(),
+                    txt: "First",
+                    val: 1
+                }, {
+                    id: Math.random(),
+                    txt: "Second",
+                    val: 2
+                }, {
+                    id: Math.random(),
+                    txt: "Third",
+                    val: 3
+                }]
+            });
+
+            viewmodel.addCommand("addListItem", function() {
+                this.list.add(new Binding.NotifyPropertyChanged({
+                    id: Math.random(),
+                    txt: "New",
+                    val: 0
+                }));
+            });
+
+            viewmodel.addCommand("remove", function(id) {
+                var item = this;
+                var parsedId = parseFloat(id);
+                var idx = -1;
+                $.each(viewmodel.list.all(), function(i, e) {
+                    if (e.id == parsedId) idx = i;
+                });
+                viewmodel.list.remove(idx);
             });
 
             viewmodel.PropertyChanged.on(function(args) {
