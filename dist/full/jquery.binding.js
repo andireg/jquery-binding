@@ -166,6 +166,7 @@ var Binding;
     var AbstractBinding = (function () {
         function AbstractBinding(context, path, jquery, property, converter) {
             if (converter === void 0) { converter = null; }
+            var _this = this;
             if (path.substr(0, 1) === "^") {
                 var contextElement = jquery.closest("*[data-binding-context=context]");
                 while (path.substr(0, 1) === "^") {
@@ -179,7 +180,24 @@ var Binding;
             this.jquery = jquery;
             this.property = property;
             this.converter = converter ? converters[converter] : null;
+            var ctx = this.context;
+            for (var idx = 0; idx < this.pathParts.length - 2; idx++) {
+                if (ctx === undefined) {
+                    break;
+                }
+                var prop = this.pathParts[idx];
+                if (ctx.PropertyChanged) {
+                    ctx.PropertyChanged.on(function (args) {
+                        if (prop === args.property) {
+                            _this.parentChanged();
+                        }
+                    });
+                }
+                ctx = ctx[prop];
+            }
         }
+        AbstractBinding.prototype.parentChanged = function () {
+        };
         Object.defineProperty(AbstractBinding.prototype, "CtxValue", {
             get: function () {
                 var _this = this;
@@ -252,13 +270,17 @@ var Binding;
             if (converter === void 0) { converter = null; }
             var _this = _super.call(this, context, path, jquery, property, converter) || this;
             _this.setToUi();
-            if (context.PropertyChanged && mode !== "set") {
-                context.PropertyChanged.on(function (args) {
-                    if (_this.CtxProperty !== args.property) {
-                        return;
-                    }
-                    _this.setToUi();
-                });
+            if (mode !== "set") {
+                if (context.PropertyChanged) {
+                    context.PropertyChanged.on(function (args) {
+                        if (_this.CtxProperty === args.property) {
+                            _this.setToUi();
+                        }
+                    });
+                }
+                else {
+                    console.warn(mode + " is not possible on property " + property);
+                }
             }
             if (mode !== "get") {
                 _this.Jquery.on(trigger || "change", function (args) {
@@ -267,6 +289,9 @@ var Binding;
             }
             return _this;
         }
+        SimpleBinding.prototype.parentChanged = function () {
+            this.setToUi();
+        };
         SimpleBinding.prototype.getFromUi = function () {
             switch (this.UiProperty) {
                 case "val":

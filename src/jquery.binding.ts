@@ -197,6 +197,26 @@ namespace Binding {
             this.jquery = jquery;
             this.property = property;
             this.converter = converter ? converters[converter] : null;
+
+            var ctx: any = this.context;
+            for(var idx: number = 0; idx < this.pathParts.length - 2; idx++) {
+                if(ctx === undefined) {
+                    break;
+                }
+                var prop: string = this.pathParts[idx];
+                if(ctx.PropertyChanged) {
+                    ctx.PropertyChanged.on((args: IPropertyChangedArgs) => {
+                        if(prop === args.property) {
+                            this.parentChanged();
+                        }
+                    });
+                }
+                ctx = ctx[prop];
+            }
+        }
+
+        protected parentChanged(): void {
+
         }
 
         protected get CtxValue(): any {
@@ -251,13 +271,16 @@ namespace Binding {
             super(context, path, jquery, property, converter);
             this.setToUi();
 
-            if (context.PropertyChanged && mode !== "set") {
-                context.PropertyChanged.on((args: IPropertyChangedArgs): void => {
-                    if(this.CtxProperty !== args.property){
-                        return;
-                    }
-                    this.setToUi();
-                });
+            if(mode !== "set") {
+                if (context.PropertyChanged) {
+                    context.PropertyChanged.on((args: IPropertyChangedArgs): void => {
+                        if(this.CtxProperty === args.property){
+                            this.setToUi();
+                        }
+                    });
+                } else {
+                    console.warn(mode + " is not possible on property " + property);
+                }
             }
 
             if (mode !== "get") {
@@ -265,6 +288,10 @@ namespace Binding {
                     this.getFromUi();
                 });
             }
+        }
+
+        protected parentChanged(): void {
+            this.setToUi();
         }
 
         private getFromUi(): void {

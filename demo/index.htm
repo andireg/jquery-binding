@@ -27,6 +27,9 @@
     <span data-binding="property:text;path:boolTest;converter:boolToCheckConverter|property:style.color;path:boolTest;converter:boolToColorConverter"></span>
     <input value="test" data-binding="property:enabled;path:boolNotTest" />
     <input value="test" data-binding="property:visibility;path:boolTest" />
+    <br />
+    <span data-binding="property:text;path:foo.bar.text"></span>
+    <button data-binding="property:command;path:replace">Replace</button>
 
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="../dist/full/jquery.binding.js"></script>
@@ -63,6 +66,11 @@
                         })
                     ]
                 ),
+                foo: new Binding.NotifyPropertyChanged({
+                    bar: new Binding.NotifyPropertyChanged({
+                        text: "Foo Bar"
+                    })
+                }),
                 addListItem: function() {
                     this.list.add(new Binding.NotifyPropertyChanged({
                         id: Math.random(),
@@ -78,6 +86,13 @@
                         if (e.id == parsedId) idx = i;
                     });
                     viewmodel.list.remove(idx);
+                },
+                replace: function() {
+                    viewmodel.foo = new Binding.NotifyPropertyChanged({
+                        bar: new Binding.NotifyPropertyChanged({
+                            text: "Bar Foo :-)"
+                        })
+                    });
                 }
             });
 
