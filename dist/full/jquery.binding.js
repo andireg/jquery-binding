@@ -11,6 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var Binding;
 (function (Binding) {
+    // ********** internal fields **********
     var converters = {};
     var Constants = (function () {
         function Constants() {
@@ -22,6 +23,9 @@ var Binding;
         Constants.PROPERTY_TYPE_COMMAND = "command";
         Constants.PROPERTY_TYPE_ITEMS = "items";
         Constants.PROPERTY_TYPE_CONTEXT = "context";
+        Constants.BINDING_MODE_GET = "get";
+        Constants.BINDING_MODE_SET = "set";
+        Constants.BINDING_MODE_BIDIRECT = "getset";
         return Constants;
     }());
     Binding.Constants = Constants;
@@ -270,7 +274,7 @@ var Binding;
             if (converter === void 0) { converter = null; }
             var _this = _super.call(this, context, path, jquery, property, converter) || this;
             _this.setToUi();
-            if (mode !== "set") {
+            if (mode !== Constants.BINDING_MODE_SET) {
                 if (context.PropertyChanged) {
                     context.PropertyChanged.on(function (args) {
                         if (_this.CtxProperty === args.property) {
@@ -279,10 +283,10 @@ var Binding;
                     });
                 }
                 else {
-                    console.warn(mode + " is not possible on property " + property);
+                    console.warn("Context object of property [%s] is not a NotifyPropertyChanged!", property);
                 }
             }
-            if (mode !== "get") {
+            if (mode !== Constants.BINDING_MODE_GET) {
                 _this.Jquery.on(trigger || "change", function (args) {
                     _this.getFromUi();
                 });
@@ -301,7 +305,27 @@ var Binding;
                 case "checked":
                     this.CtxValue = this.Jquery.is(":checked");
                     break;
+                case "text":
+                    this.CtxValue = this.Jquery.text();
+                    break;
+                case "visibility":
+                    this.CtxValue = this.Jquery.css("display");
+                    break;
+                case "enabled":
+                    this.CtxValue = this.Jquery.is(":disabled");
+                    break;
                 default:
+                    if (this.UiProperty.substr(0, 6).toLowerCase() === "style.") {
+                        var styleProperty = this.UiProperty.substr(6);
+                        this.CtxValue = this.Jquery.css(styleProperty);
+                        break;
+                    }
+                    if (this.UiProperty.substr(0, 10).toLowerCase() === "attribute.") {
+                        var attribute = this.UiProperty.substr(10);
+                        this.CtxValue = this.Jquery.attr(attribute);
+                        break;
+                    }
+                    console.warn("Cannot get value from property %s!", this.UiProperty);
                     break;
             }
         };
@@ -329,6 +353,12 @@ var Binding;
                         this.Jquery.css(styleProperty, this.CtxValue);
                         break;
                     }
+                    if (this.UiProperty.substr(0, 10).toLowerCase() === "attribute.") {
+                        var attribute = this.UiProperty.substr(10);
+                        this.Jquery.attr(attribute, this.CtxValue);
+                        break;
+                    }
+                    console.warn("Cannot set value to property %s!", this.UiProperty);
                     break;
             }
         };
@@ -347,9 +377,10 @@ var Binding;
         CommandBinding.prototype.call = function () {
             var ctxValue = this.CtxValue;
             if (!ctxValue) {
-                console.error("Path " + this.CtxPath + " does not exist!");
+                console.warn("Command [" + this.CtxPath + "] does not exist!");
                 return;
             }
+            console.log("Command [" + this.CtxPath + "] applied.");
             ctxValue.apply(this.Ctx, [this.parameter]);
         };
         return CommandBinding;
@@ -372,6 +403,7 @@ var Binding;
             });
             if (value.CollectionChanged) {
                 value.CollectionChanged.on(function (args) {
+                    console.log("List action [%s] index %d on [%s] executed (item %o).", args.action, args.index, _this.CtxPath, args.item);
                     switch (args.action) {
                         case Constants.COLLECTION_ACTION_ADD:
                             _this.addElement(args.item, args.index);

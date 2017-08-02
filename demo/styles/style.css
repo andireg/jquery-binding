@@ -1,0 +1,71 @@
+html {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#log {
+    height: 20%;
+    overflow: scroll;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    font-family: Courier New, Courier, monospace;
+    list-style: none;
+    padding: 20px 0 0 0;
+    margin: 0;
+    border: 1px solid #dedede;
+    background: #efefef;
+}
+
+#log:before {
+    content: "Log";
+    background: #dedede;
+    font-weight: bold;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+#log>li {
+    white-space: nowrap;
+}
+
+#log>li:before {
+    font-weight: bold;
+    display: inline-block;
+    width: 70px;
+}
+
+#log>li.log {
+    color: black;
+}
+
+#log>li.log:before {
+    content: "LOG";
+}
+
+#log>li.info {
+    color: darkblue;
+}
+
+#log>li.info:before {
+    content: "INFO";
+}
+
+#log>li.warning {
+    color: orange;
+}
+
+#log>li.warning:before {
+    content: "WARNING";
+}
+
+#log>li.error {
+    color: red;
+}
+
+#log>li.error:before {
+    content: "ERROR";
+}

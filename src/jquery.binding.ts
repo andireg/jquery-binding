@@ -2,19 +2,10 @@
 
 namespace Binding {
 
+    // ********** internal fields **********
     var converters : { [id: string]: IValueConverter; } = {};
 
-    export class Constants {
-        public static readonly COLLECTION_ACTION_ADD = "add";
-        public static readonly COLLECTION_ACTION_INSERT = "insert";
-        public static readonly COLLECTION_ACTION_CLEAR = "clear";
-        public static readonly COLLECTION_ACTION_REMOVE = "remove";
-
-        public static readonly PROPERTY_TYPE_COMMAND = "command";
-        public static readonly PROPERTY_TYPE_ITEMS = "items";
-        public static readonly PROPERTY_TYPE_CONTEXT = "context";
-    }
-
+    // ********** interfaces **********
     export interface IEvent<T> {
         on(handler: { (data?: T): void }) : void;
         off(handler: { (data?: T): void }) : void;
@@ -38,6 +29,21 @@ namespace Binding {
         action: string;
         index?: number;
         item?: any;
+    }
+
+    export class Constants {
+        public static readonly COLLECTION_ACTION_ADD = "add";
+        public static readonly COLLECTION_ACTION_INSERT = "insert";
+        public static readonly COLLECTION_ACTION_CLEAR = "clear";
+        public static readonly COLLECTION_ACTION_REMOVE = "remove";
+
+        public static readonly PROPERTY_TYPE_COMMAND = "command";
+        public static readonly PROPERTY_TYPE_ITEMS = "items";
+        public static readonly PROPERTY_TYPE_CONTEXT = "context";
+
+        public static readonly BINDING_MODE_GET = "get";
+        public static readonly BINDING_MODE_SET = "set";
+        public static readonly BINDING_MODE_BIDIRECT = "getset";
     }
 
     export class TypedObservableCollection<T> {
@@ -271,7 +277,7 @@ namespace Binding {
             super(context, path, jquery, property, converter);
             this.setToUi();
 
-            if(mode !== "set") {
+            if(mode !== Constants.BINDING_MODE_SET) {
                 if (context.PropertyChanged) {
                     context.PropertyChanged.on((args: IPropertyChangedArgs): void => {
                         if(this.CtxProperty === args.property){
@@ -279,11 +285,11 @@ namespace Binding {
                         }
                     });
                 } else {
-                    console.warn(mode + " is not possible on property " + property);
+                    console.warn("Context object of property [%s] is not a NotifyPropertyChanged!", property);
                 }
             }
 
-            if (mode !== "get") {
+            if (mode !== Constants.BINDING_MODE_GET) {
                 this.Jquery.on(trigger || "change", (args: JQueryEventObject): void => {
                     this.getFromUi();
                 });
@@ -303,7 +309,27 @@ namespace Binding {
                 case "checked":
                     this.CtxValue = this.Jquery.is(":checked");
                     break;
+                case "text":
+                    this.CtxValue = this.Jquery.text();
+                    break;
+                case "visibility":
+                    this.CtxValue = this.Jquery.css("display");
+                    break;
+                case "enabled":
+                    this.CtxValue = this.Jquery.is(":disabled");
+                    break;
                 default:
+                    if(this.UiProperty.substr(0, 6).toLowerCase() === "style.") {
+                        var styleProperty: string = this.UiProperty.substr(6);
+                        this.CtxValue = this.Jquery.css(styleProperty);
+                        break;
+                    }
+                    if(this.UiProperty.substr(0, 10).toLowerCase() === "attribute.") {
+                        var attribute: string = this.UiProperty.substr(10);
+                        this.CtxValue = this.Jquery.attr(attribute);
+                        break;
+                    }
+                    console.warn("Cannot get value from property %s!", this.UiProperty);
                     break;
             }
         }
@@ -332,6 +358,12 @@ namespace Binding {
                         this.Jquery.css(styleProperty, this.CtxValue);
                         break;
                     }
+                    if(this.UiProperty.substr(0, 10).toLowerCase() === "attribute.") {
+                        var attribute: string = this.UiProperty.substr(10);
+                        this.Jquery.attr(attribute, this.CtxValue);
+                        break;
+                    }
+                    console.warn("Cannot set value to property %s!", this.UiProperty);
                     break;
             }
         }
@@ -351,9 +383,10 @@ namespace Binding {
         private call(): void {
             var ctxValue: Function = this.CtxValue;
             if(!ctxValue) {
-                console.error("Path " + this.CtxPath + " does not exist!"); 
+                console.warn("Command [" + this.CtxPath + "] does not exist!"); 
                 return;
             }
+            console.log("Command [" + this.CtxPath + "] applied.")
             ctxValue.apply(this.Ctx, [this.parameter]);
         }
     }
@@ -378,6 +411,7 @@ namespace Binding {
 
             if(value.CollectionChanged){
                 value.CollectionChanged.on((args: ICollectionChangedArgs):void => {
+                    console.log("List action [%s] index %d on [%s] executed (item %o).", args.action, args.index, this.CtxPath, args.item);
                     switch(args.action) {
                         case Constants.COLLECTION_ACTION_ADD:
                             this.addElement(args.item, args.index);
